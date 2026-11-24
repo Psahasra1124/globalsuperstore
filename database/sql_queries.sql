@@ -1,0 +1,104 @@
+-- 01 Total revenue
+SELECT ROUND(SUM(Sales),2) AS total_revenue FROM orders;
+
+-- 02 Overall profit
+SELECT ROUND(SUM(Profit),2) AS total_profit FROM orders;
+
+-- 03 Sales by category
+SELECT Category,SUM(Sales) AS sales FROM orders GROUP BY Category ORDER BY sales DESC;
+
+-- 04 Profit by region
+SELECT Region,SUM(Profit) AS profit FROM orders GROUP BY Region ORDER BY profit DESC;
+
+-- 05 Top 10 customers
+SELECT `Customer Name`,SUM(Sales) AS sales FROM orders GROUP BY `Customer Name` ORDER BY sales DESC LIMIT 10;
+
+-- 06 Loss-making products
+SELECT `Product Name`,SUM(Profit) AS profit FROM orders GROUP BY `Product Name` HAVING SUM(Profit)<0 ORDER BY profit LIMIT 25;
+
+-- 07 Shipping mode frequency
+SELECT `Ship Mode`,COUNT(DISTINCT `Order ID`) AS orders FROM orders GROUP BY `Ship Mode` ORDER BY orders DESC;
+
+-- 08 Monthly sales
+SELECT `Order Month`,SUM(Sales) AS sales FROM orders GROUP BY `Order Month` ORDER BY `Order Month`;
+
+-- 09 Sub-category profit margin
+SELECT `Sub-Category`,SUM(Profit)/NULLIF(SUM(Sales),0) AS profit_margin FROM orders GROUP BY `Sub-Category` ORDER BY profit_margin DESC;
+
+-- 10 Region sales share
+SELECT Region,SUM(Sales) AS sales,100.0*SUM(Sales)/(SELECT SUM(Sales) FROM orders) AS sales_pct FROM orders GROUP BY Region ORDER BY sales DESC;
+
+-- 11 Repeat customers
+SELECT `Customer ID`,`Customer Name`,COUNT(DISTINCT `Order ID`) AS order_count FROM orders GROUP BY `Customer ID`,`Customer Name` HAVING COUNT(DISTINCT `Order ID`)>1 ORDER BY order_count DESC;
+
+-- 12 Average order value
+SELECT AVG(order_sales) AS average_order_value FROM (SELECT `Order ID`,SUM(Sales) AS order_sales FROM orders GROUP BY `Order ID`) x;
+
+-- 13 Top products by sales
+SELECT `Product Name`,SUM(Sales) AS sales FROM orders GROUP BY `Product Name` ORDER BY sales DESC LIMIT 20;
+
+-- 14 Negative-profit regions
+SELECT Region,SUM(Profit) AS profit FROM orders GROUP BY Region HAVING SUM(Profit)<0 ORDER BY profit;
+
+-- 15 Sales by segment and category
+SELECT Segment,Category,SUM(Sales) AS sales FROM orders GROUP BY Segment,Category ORDER BY Segment,sales DESC;
+
+-- 16 CASE profit classification
+SELECT CASE WHEN Profit<0 THEN 'Loss' WHEN Profit<100 THEN 'Low' ELSE 'Positive' END AS profit_band,COUNT(*) AS line_items FROM orders GROUP BY profit_band;
+
+-- 17 INNER JOIN customer totals
+SELECT c.`Customer ID`,c.`Customer Name`,c.Sales FROM (SELECT `Customer ID`,`Customer Name`,SUM(Sales) Sales FROM orders GROUP BY `Customer ID`,`Customer Name`) c INNER JOIN (SELECT `Customer ID` FROM orders GROUP BY `Customer ID`) d ON c.`Customer ID`=d.`Customer ID` ORDER BY c.Sales DESC LIMIT 20;
+
+-- 18 LEFT JOIN region lookup example
+SELECT r.Region,COALESCE(s.sales,0) AS sales FROM (SELECT DISTINCT Region FROM orders) r LEFT JOIN (SELECT Region,SUM(Sales) sales FROM orders GROUP BY Region) s ON r.Region=s.Region;
+
+-- 19 CTE category performance
+WITH category_totals AS (SELECT Category,SUM(Sales) sales,SUM(Profit) profit FROM orders GROUP BY Category) SELECT *,profit/NULLIF(sales,0) AS margin FROM category_totals ORDER BY sales DESC;
+
+-- 20 Window ranking
+SELECT `Product Name`,sales,RANK() OVER(ORDER BY sales DESC) AS sales_rank FROM (SELECT `Product Name`,SUM(Sales) sales FROM orders GROUP BY `Product Name`) p LIMIT 20;
+
+-- 21 Running monthly sales total
+SELECT `Order Month`,sales,SUM(sales) OVER(ORDER BY `Order Month`) AS running_sales FROM (SELECT `Order Month`,SUM(Sales) sales FROM orders GROUP BY `Order Month`) m ORDER BY `Order Month`;
+
+-- 22 Year-over-year sales
+WITH yearly AS (SELECT Year,SUM(Sales) sales FROM orders GROUP BY Year) SELECT Year,sales,LAG(sales) OVER(ORDER BY Year) previous_year,100.0*(sales-LAG(sales) OVER(ORDER BY Year))/NULLIF(LAG(sales) OVER(ORDER BY Year),0) yoy_growth_pct FROM yearly ORDER BY Year;
+
+-- 23 Orders by country
+SELECT Country,COUNT(DISTINCT `Order ID`) orders,SUM(Sales) sales FROM orders GROUP BY Country ORDER BY sales DESC LIMIT 20;
+
+-- 24 Discount vs profit
+SELECT Discount,AVG(Profit) average_profit,SUM(Sales) sales FROM orders GROUP BY Discount ORDER BY Discount;
+
+-- 25 Average shipping duration
+SELECT `Ship Mode`,AVG(`Shipping Duration`) avg_shipping_days FROM orders GROUP BY `Ship Mode` ORDER BY avg_shipping_days;
+
+-- 26 Sub-category sales
+SELECT `Sub-Category`,SUM(Sales) AS sales FROM orders GROUP BY `Sub-Category` ORDER BY sales DESC;
+
+-- 27 Market performance
+SELECT Market,SUM(Sales) AS sales,SUM(Profit) AS profit FROM orders GROUP BY Market ORDER BY sales DESC;
+
+-- 28 Profit by country
+SELECT Country,SUM(Profit) AS profit,SUM(Sales) AS sales FROM orders GROUP BY Country ORDER BY profit DESC LIMIT 25;
+
+-- 29 Monthly profit trend
+SELECT `Order Month`,SUM(Profit) AS profit FROM orders GROUP BY `Order Month` ORDER BY `Order Month`;
+
+-- 30 Category discount impact
+SELECT Category,AVG(Discount) AS average_discount,AVG(Profit) AS average_profit,SUM(Sales) AS sales FROM orders GROUP BY Category ORDER BY average_discount DESC;
+
+-- 31 Order priority mix
+SELECT `Order Priority`,COUNT(DISTINCT `Order ID`) AS orders FROM orders GROUP BY `Order Priority` ORDER BY orders DESC;
+
+-- 32 Quarterly sales
+SELECT Year,Quarter,SUM(Sales) AS sales FROM orders GROUP BY Year,Quarter ORDER BY Year,Quarter;
+
+-- 33 Segment performance
+SELECT Segment,COUNT(DISTINCT `Order ID`) AS orders,SUM(Sales) AS sales,SUM(Profit) AS profit FROM orders GROUP BY Segment ORDER BY sales DESC;
+
+-- 34 Customer average order value
+SELECT `Customer ID`,AVG(order_sales) AS average_order_value FROM (SELECT `Customer ID`,`Order ID`,SUM(Sales) AS order_sales FROM orders GROUP BY `Customer ID`,`Order ID`) customer_orders GROUP BY `Customer ID` ORDER BY average_order_value DESC LIMIT 25;
+
+-- 35 Sales by state
+SELECT State,SUM(Sales) AS sales,SUM(Profit) AS profit FROM orders GROUP BY State ORDER BY sales DESC LIMIT 25;
