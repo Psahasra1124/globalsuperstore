@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Global Superstore — Business Intelligence & Analytics
 
 A Python and Streamlit business intelligence application for exploring sales, profit, customer value, products, geography, shipping, and data quality. The application uses interactive Plotly visualizations and SQLite; it does not use Power BI or Tableau.
@@ -68,3 +69,6 @@ Optional MySQL setup requires a MySQL 8+ server and a database named `superstore
 ## Data limitations
 
 The commonly circulated Global Superstore dataset is an educational retail dataset, not audited company financial data. Currency and scope depend on the dataset version. Validate the source and assumptions before using results for business decisions.
+=======
+# globalsuperstore
+>>>>>>> 5183f26d3a6991e168168556277059c8b29c340b
